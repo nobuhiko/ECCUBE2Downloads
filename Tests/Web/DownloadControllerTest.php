@@ -5,7 +5,6 @@ namespace Plugin\ECCUBE2Downloads\Tests\Web;
 use Eccube\Entity\Customer;
 use Eccube\Entity\Master\OrderStatus;
 use Eccube\Entity\Order;
-use Eccube\Entity\ProductClass;
 use Eccube\Tests\Web\AbstractWebTestCase;
 use Plugin\ECCUBE2Downloads\Entity\Config;
 
@@ -27,7 +26,7 @@ class DownloadControllerTest extends AbstractWebTestCase
         $this->Customer = $this->createCustomer();
 
         // テスト用ダウンロードファイルを作成
-        $this->downloadDir = static::getContainer()->get('eccube.config')['kernel.project_dir'] . '/var/downloads';
+        $this->downloadDir = $this->eccubeConfig->get('kernel.project_dir') . '/var/downloads';
         if (!file_exists($this->downloadDir)) {
             mkdir($this->downloadDir, 0777, true);
         }
@@ -56,7 +55,7 @@ class DownloadControllerTest extends AbstractWebTestCase
 
     protected function tearDown(): void
     {
-        if (file_exists($this->downloadDir . '/test_file.pdf')) {
+        if ($this->downloadDir && file_exists($this->downloadDir . '/test_file.pdf')) {
             unlink($this->downloadDir . '/test_file.pdf');
         }
         parent::tearDown();
