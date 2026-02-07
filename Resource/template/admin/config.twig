@@ -1,0 +1,70 @@
+{% extends '@admin/default_frame.twig' %}
+
+{% set menus = ['store', 'plugin', 'plugin_list'] %}
+
+{% block title %}ダウンロード販売設定{% endblock %}
+{% block sub_title %}{% endblock %}
+
+{% form_theme form '@admin/Form/bootstrap_4_horizontal_layout.html.twig' %}
+
+{% block main %}
+    <form method="post" action="{{ url('eccube2downloads_admin_config') }}">
+        {{ form_widget(form._token) }}
+
+        <div class="c-contentsArea__cols">
+            <div class="c-contentsArea__primaryCol">
+                <div class="c-primaryCol">
+                    <div class="card rounded border-0 mb-4">
+                        <div class="card-header"><span>ダウンロード販売設定</span></div>
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <div class="col-3">
+                                    <span>ダウンロード可能日数</span>
+                                </div>
+                                <div class="col">
+                                    {{ form_widget(form.downloadable_days, {'attr': {'class': 'form-control', 'style': 'width: 150px;'}}) }}
+                                    {{ form_errors(form.downloadable_days) }}
+                                    <p class="form-text text-muted">入金日からダウンロード可能な日数を設定します。</p>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-3">
+                                    <span>ダウンロード期限無制限</span>
+                                </div>
+                                <div class="col">
+                                    <div class="form-check">
+                                        {{ form_widget(form.downloadable_days_unlimited, {'attr': {'class': 'form-check-input'}}) }}
+                                        <label class="form-check-label" for="{{ form.downloadable_days_unlimited.vars.id }}">
+                                            ダウンロード期限を無制限にする
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="c-conversionArea">
+            <div class="c-conversionArea__container">
+                <div class="row justify-content-between align-items-center">
+                    <div class="col-6">
+                        <div class="c-conversionArea__leftBlockItem">
+                            <a class="c-baseLink" href="{{ url('admin_store_plugin') }}">
+                                <i class="fa fa-backward" aria-hidden="true"></i>
+                                <span>{{ 'admin.common.back'|trans }}</span>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="row align-items-center justify-content-end">
+                            <div class="col-auto">
+                                <button class="btn btn-ec-conversion px-5" type="submit">{{ 'admin.common.registration'|trans }}</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+{% endblock %}

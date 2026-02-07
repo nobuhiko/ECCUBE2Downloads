@@ -1,0 +1,51 @@
+{% set has_download_items = false %}
+{% for Shipping in Order.Shippings %}
+    {% for orderItem in Shipping.productOrderItems %}
+        {% if orderItem.ProductClass is not null and orderItem.ProductClass.down_realfilename is defined and orderItem.ProductClass.down_realfilename is not empty %}
+            {% set has_download_items = true %}
+        {% endif %}
+    {% endfor %}
+{% endfor %}
+
+{% if has_download_items %}
+<div class="ec-orderRole__detail" style="margin-top: 20px;">
+    <div class="ec-orderDelivery">
+        <div class="ec-rectHeading">
+            <h2>ダウンロード商品</h2>
+        </div>
+        {% for Shipping in Order.Shippings %}
+            {% for orderItem in Shipping.productOrderItems %}
+                {% if orderItem.ProductClass is not null and orderItem.ProductClass.down_realfilename is defined and orderItem.ProductClass.down_realfilename is not empty %}
+                    <div class="ec-orderDelivery__item" style="padding: 10px 0; border-bottom: 1px solid #eee;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <strong>{{ orderItem.productName }}</strong>
+                                {% if orderItem.ProductClass.down_filename is defined and orderItem.ProductClass.down_filename is not empty %}
+                                    <br><small>ファイル名: {{ orderItem.ProductClass.down_filename }}</small>
+                                {% endif %}
+                            </div>
+                            <div>
+                                {% if Order.payment_date is null %}
+                                    <span class="badge bg-warning text-dark">入金確認中</span>
+                                {% elseif eccube2downloads_config is defined and eccube2downloads_config is not null %}
+                                    {% if eccube2downloads_config.downloadableDaysUnlimited %}
+                                        <a href="{{ url('eccube2downloads_mypage_download', {'order_no': Order.order_no, 'order_item_id': orderItem.id}) }}" class="btn btn-ec-regular btn-sm">ダウンロード</a>
+                                    {% else %}
+                                        {% set deadline = Order.payment_date|date_modify('+' ~ eccube2downloads_config.downloadableDays ~ ' days') %}
+                                        {% if date() > deadline %}
+                                            <span class="badge bg-secondary">ダウンロード期限切れ</span>
+                                        {% else %}
+                                            <a href="{{ url('eccube2downloads_mypage_download', {'order_no': Order.order_no, 'order_item_id': orderItem.id}) }}" class="btn btn-ec-regular btn-sm">ダウンロード</a>
+                                            <br><small class="text-muted">期限: {{ deadline|date('Y/m/d') }}</small>
+                                        {% endif %}
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
