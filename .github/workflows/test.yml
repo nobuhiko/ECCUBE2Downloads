@@ -1,0 +1,227 @@
+name: CI for ECCUBE2Downloads
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  plugin-install:
+    name: Plugin Install
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        php: [ '8.1', '8.2', '8.3' ]
+        db: [ pgsql, sqlite3 ]
+        eccube-version: [ '4.3' ]
+        include:
+          - db: pgsql
+            database_url: postgres://postgres:password@127.0.0.1:5432/eccube_db
+            database_server_version: 16
+            database_charset: utf8
+          - db: sqlite3
+            database_url: sqlite:///var/eccube.db
+            database_server_version: 3
+            database_charset: utf8
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+        ports:
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+
+    steps:
+      - name: Checkout EC-CUBE
+        uses: actions/checkout@v4
+        with:
+          repository: EC-CUBE/ec-cube
+          ref: ${{ matrix.eccube-version }}
+
+      - name: Checkout Plugin
+        uses: actions/checkout@v4
+        with:
+          path: app/Plugin/ECCUBE2Downloads
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: mbstring, xml, ctype, iconv, pdo_sqlite, pgsql, pdo_pgsql
+
+      - name: Get Composer Cache Directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+      - name: Cache Composer
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Composer Install
+        run: composer install --dev --no-interaction -o --apcu-autoloader
+
+      - name: Setup EC-CUBE
+        env:
+          APP_ENV: test
+          DATABASE_URL: ${{ matrix.database_url }}
+          DATABASE_SERVER_VERSION: ${{ matrix.database_server_version }}
+          DATABASE_CHARSET: ${{ matrix.database_charset }}
+        run: |
+          bin/console doctrine:database:create
+          bin/console doctrine:schema:create
+          bin/console eccube:fixtures:load
+
+      - name: Plugin Install
+        env:
+          APP_ENV: test
+          DATABASE_URL: ${{ matrix.database_url }}
+          DATABASE_SERVER_VERSION: ${{ matrix.database_server_version }}
+          DATABASE_CHARSET: ${{ matrix.database_charset }}
+        run: |
+          bin/console eccube:plugin:install --code=ECCUBE2Downloads
+          bin/console cache:clear --no-warmup
+
+      - name: Plugin Enable
+        env:
+          APP_ENV: test
+          DATABASE_URL: ${{ matrix.database_url }}
+          DATABASE_SERVER_VERSION: ${{ matrix.database_server_version }}
+          DATABASE_CHARSET: ${{ matrix.database_charset }}
+        run: |
+          bin/console eccube:plugin:enable --code=ECCUBE2Downloads
+          bin/console cache:clear --no-warmup
+
+      - name: Plugin Disable
+        env:
+          APP_ENV: test
+          DATABASE_URL: ${{ matrix.database_url }}
+          DATABASE_SERVER_VERSION: ${{ matrix.database_server_version }}
+          DATABASE_CHARSET: ${{ matrix.database_charset }}
+        run: |
+          bin/console eccube:plugin:disable --code=ECCUBE2Downloads
+          bin/console cache:clear --no-warmup
+
+      - name: Plugin Re-Enable
+        env:
+          APP_ENV: test
+          DATABASE_URL: ${{ matrix.database_url }}
+          DATABASE_SERVER_VERSION: ${{ matrix.database_server_version }}
+          DATABASE_CHARSET: ${{ matrix.database_charset }}
+        run: |
+          bin/console eccube:plugin:enable --code=ECCUBE2Downloads
+          bin/console cache:clear --no-warmup
+
+      - name: Plugin Uninstall
+        env:
+          APP_ENV: test
+          DATABASE_URL: ${{ matrix.database_url }}
+          DATABASE_SERVER_VERSION: ${{ matrix.database_server_version }}
+          DATABASE_CHARSET: ${{ matrix.database_charset }}
+        run: |
+          bin/console eccube:plugin:disable --code=ECCUBE2Downloads
+          bin/console eccube:plugin:uninstall --code=ECCUBE2Downloads
+
+  phpunit:
+    name: PHPUnit
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        php: [ '8.1', '8.2', '8.3' ]
+        db: [ pgsql, sqlite3 ]
+        eccube-version: [ '4.3' ]
+        include:
+          - db: pgsql
+            database_url: postgres://postgres:password@127.0.0.1:5432/eccube_db
+            database_server_version: 16
+            database_charset: utf8
+          - db: sqlite3
+            database_url: sqlite:///var/eccube.db
+            database_server_version: 3
+            database_charset: utf8
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+        ports:
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+
+    steps:
+      - name: Checkout EC-CUBE
+        uses: actions/checkout@v4
+        with:
+          repository: EC-CUBE/ec-cube
+          ref: ${{ matrix.eccube-version }}
+
+      - name: Checkout Plugin
+        uses: actions/checkout@v4
+        with:
+          path: app/Plugin/ECCUBE2Downloads
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: mbstring, xml, ctype, iconv, pdo_sqlite, pgsql, pdo_pgsql
+
+      - name: Get Composer Cache Directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+      - name: Cache Composer
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Composer Install
+        run: composer install --dev --no-interaction -o --apcu-autoloader
+
+      - name: Setup EC-CUBE
+        env:
+          APP_ENV: test
+          DATABASE_URL: ${{ matrix.database_url }}
+          DATABASE_SERVER_VERSION: ${{ matrix.database_server_version }}
+          DATABASE_CHARSET: ${{ matrix.database_charset }}
+        run: |
+          bin/console doctrine:database:create
+          bin/console doctrine:schema:create
+          bin/console eccube:fixtures:load
+
+      - name: Plugin Install and Enable
+        env:
+          APP_ENV: test
+          DATABASE_URL: ${{ matrix.database_url }}
+          DATABASE_SERVER_VERSION: ${{ matrix.database_server_version }}
+          DATABASE_CHARSET: ${{ matrix.database_charset }}
+        run: |
+          bin/console eccube:plugin:install --code=ECCUBE2Downloads
+          bin/console cache:clear --no-warmup
+          bin/console eccube:plugin:enable --code=ECCUBE2Downloads
+          bin/console cache:clear --no-warmup
+
+      - name: PHPUnit
+        env:
+          APP_ENV: test
+          DATABASE_URL: ${{ matrix.database_url }}
+          DATABASE_SERVER_VERSION: ${{ matrix.database_server_version }}
+          DATABASE_CHARSET: ${{ matrix.database_charset }}
+        run: vendor/bin/phpunit app/Plugin/ECCUBE2Downloads/Tests
+
+      - name: Upload logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phpunit-${{ matrix.php }}-${{ matrix.db }}-logs
+          path: var/log/
