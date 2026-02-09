@@ -1,7 +1,7 @@
 {% set has_download_items = false %}
 {% for Shipping in Order.Shippings %}
     {% for orderItem in Shipping.productOrderItems %}
-        {% if orderItem.ProductClass is not null and orderItem.ProductClass.down_realfilename is defined and orderItem.ProductClass.down_realfilename is not empty %}
+        {% if orderItem.ProductClass is not null and orderItem.ProductClass.down_realfilename is not empty %}
             {% set has_download_items = true %}
         {% endif %}
     {% endfor %}
@@ -15,12 +15,12 @@
         </div>
         {% for Shipping in Order.Shippings %}
             {% for orderItem in Shipping.productOrderItems %}
-                {% if orderItem.ProductClass is not null and orderItem.ProductClass.down_realfilename is defined and orderItem.ProductClass.down_realfilename is not empty %}
+                {% if orderItem.ProductClass is not null and orderItem.ProductClass.down_realfilename is not empty %}
                     <div class="ec-orderDelivery__item" style="padding: 10px 0; border-bottom: 1px solid #eee;">
                         <div style="display: flex; justify-content: space-between; align-items: center;">
                             <div>
                                 <strong>{{ orderItem.productName }}</strong>
-                                {% if orderItem.ProductClass.down_filename is defined and orderItem.ProductClass.down_filename is not empty %}
+                                {% if orderItem.ProductClass.down_filename is not empty %}
                                     <br><small>ファイル名: {{ orderItem.ProductClass.down_filename }}</small>
                                 {% endif %}
                             </div>

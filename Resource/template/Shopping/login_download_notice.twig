@@ -1,0 +1,12 @@
+<script>
+    (function() {
+        // ゲスト購入ボタンを非表示にする
+        var guestSection = document.querySelector('.ec-guest');
+        if (guestSection) {
+            var notice = document.createElement('div');
+            notice.className = 'ec-guest';
+            notice.innerHTML = '<div class="ec-guest__inner"><p class="ec-errorMessage">ダウンロード商品のご購入には会員登録が必要です。</p><p><a class="ec-link" href="' + '{{ url("entry") }}' + '">新規会員登録はこちら</a></p></div>';
+            guestSection.parentNode.replaceChild(notice, guestSection);
+        }
+    })();
+</script>

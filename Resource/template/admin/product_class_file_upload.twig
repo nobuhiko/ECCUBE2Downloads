@@ -1,0 +1,163 @@
+<script>
+$(function() {
+    var uploadUrl = '{{ url("eccube2downloads_admin_file_upload") }}';
+    var deleteUrl = '{{ url("eccube2downloads_admin_file_delete") }}';
+    var SALE_TYPE_DOWNLOAD = '{{ constant('Plugin\\ECCUBE2Downloads\\PluginManager::SALE_TYPE_ID') }}';
+
+    // 販売種別に応じてダウンロードフィールドの表示切替
+    function toggleDownloadFields($saleType) {
+        var isDownload = $saleType.val() === SALE_TYPE_DOWNLOAD;
+
+        // 同じフォーム行内の down_filename / down_realfilename を取得
+        // product.twig: 共通の親要素内にある
+        // product_class.twig: 同じ <tr> 内にある
+        var idPrefix = $saleType.attr('id').replace(/_sale_type$/, '');
+        var $downFilename = $('#' + idPrefix + '_down_filename');
+        var $downRealfilename = $('#' + idPrefix + '_down_realfilename');
+
+        // フィールドの親要素（product.twig では .row、product_class.twig では td）
+        toggleField($downFilename, isDownload);
+        toggleField($downRealfilename, isDownload);
+    }
+
+    function toggleField($input, show) {
+        if (!$input.length) return;
+
+        // product.twig: 親が .row > .col > div > input
+        // product_class.twig: 親が td > input
+        var $container = $input.closest('.row.mb-2');
+        if (!$container.length) {
+            $container = $input.closest('td');
+        }
+        if (!$container.length) {
+            $container = $input.closest('.row');
+        }
+
+        if (show) {
+            $container.show();
+        } else {
+            $container.hide();
+        }
+    }
+
+    // down_realfilename のテキスト入力をファイルアップロードUIに変換
+    $('input[id$="_down_realfilename"]').each(function() {
+        var $input = $(this);
+        var id = $input.attr('id');
+
+        $input.attr('readonly', 'readonly');
+
+        var $wrap = $('<div class="eccube2downloads-file-upload"></div>');
+        $input.wrap($wrap);
+
+        var hasFile = !!$input.val();
+        var $buttons = $('<div class="mt-1">' +
+            '<label class="btn btn-ec-conversion btn-sm mb-0">ファイルを選択' +
+            '<input type="file" class="eccube2downloads-file-input d-none" data-target-id="' + id + '">' +
+            '</label> ' +
+            '<button type="button" class="btn btn-ec-delete btn-sm eccube2downloads-file-delete' + (hasFile ? '' : ' d-none') + '" data-target-id="' + id + '">削除</button>' +
+            '</div>');
+        $input.after($buttons);
+    });
+
+    // 初期状態の設定 + 変更イベント登録
+    $('select[id$="_sale_type"]').each(function() {
+        toggleDownloadFields($(this));
+    }).on('change', function() {
+        toggleDownloadFields($(this));
+    });
+
+    // ファイル選択時のアップロード処理
+    $(document).on('change', '.eccube2downloads-file-input', function() {
+        var $fileInput = $(this);
+        var file = this.files[0];
+        if (!file) return;
+
+        var targetId = $fileInput.data('target-id');
+        var $target = $('#' + targetId);
+        var $container = $target.closest('.eccube2downloads-file-upload');
+
+        var formData = new FormData();
+        formData.append('eccube2downloads_file', file);
+
+        $.ajax({
+            url: uploadUrl,
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            dataType: 'json'
+        }).done(function(data) {
+            $target.val(data.filename);
+            $container.find('.eccube2downloads-file-delete').removeClass('d-none');
+            $container.css('border', '');
+
+            // down_filename が空なら元ファイル名をセット
+            var downFilenameId = targetId.replace(/_down_realfilename$/, '_down_filename');
+            var $downFilename = $('#' + downFilenameId);
+            if ($downFilename.length && !$downFilename.val()) {
+                $downFilename.val(data.original_name);
+            }
+        }).fail(function(xhr) {
+            var msg = 'アップロードに失敗しました。';
+            if (xhr.responseJSON && xhr.responseJSON.error) {
+                msg = xhr.responseJSON.error;
+            }
+            alert(msg);
+        });
+
+        $fileInput.val('');
+    });
+
+    // フォーム送信時のバリデーション
+    $(document).on('submit', 'form', function(e) {
+        var errors = [];
+        $('select[id$="_sale_type"]').each(function() {
+            var $saleType = $(this);
+            if ($saleType.val() !== SALE_TYPE_DOWNLOAD) return;
+
+            // product_class.twig: チェックされている行のみ検証
+            var $row = $saleType.closest('tr');
+            if ($row.length) {
+                var $checked = $row.find('input[id$="_checked"]');
+                if ($checked.length && !$checked.is(':checked')) return;
+            }
+
+            var idPrefix = $saleType.attr('id').replace(/_sale_type$/, '');
+            var $realfilename = $('#' + idPrefix + '_down_realfilename');
+            if ($realfilename.length && !$realfilename.val()) {
+                errors.push('販売種別が「ダウンロード」の場合、ダウンロードファイルは必須です。');
+                $realfilename.closest('.eccube2downloads-file-upload').css('border', '2px solid #dc3545');
+            }
+        });
+        if (errors.length > 0) {
+            alert(errors[0]);
+            e.preventDefault();
+            return false;
+        }
+    });
+
+    // ファイル削除ボタン
+    $(document).on('click', '.eccube2downloads-file-delete', function() {
+        var $btn = $(this);
+        var targetId = $btn.data('target-id');
+        var $target = $('#' + targetId);
+        var filename = $target.val();
+
+        if (!filename) return;
+        if (!confirm('ファイルを削除してもよろしいですか？')) return;
+
+        $.ajax({
+            url: deleteUrl,
+            type: 'POST',
+            data: { filename: filename },
+            dataType: 'json'
+        }).done(function() {
+            $target.val('');
+            $btn.addClass('d-none');
+        }).fail(function() {
+            alert('削除に失敗しました。');
+        });
+    });
+});
+</script>

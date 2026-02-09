@@ -29,6 +29,10 @@ class MypageHistoryListener implements EventSubscriberInterface
     {
         $Config = $this->configRepository->get();
         $event->setParameter('eccube2downloads_config', $Config);
-        $event->addSnippet('@ECCUBE2Downloads/Mypage/download_link.twig');
+
+        $source = $event->getSource();
+        $insert = "{% include '@ECCUBE2Downloads/Mypage/download_link.twig' %}";
+        $source = str_replace('{% endblock %}', $insert."\n{% endblock %}", $source);
+        $event->setSource($source);
     }
 }
