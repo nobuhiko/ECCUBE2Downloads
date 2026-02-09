@@ -1,6 +1,6 @@
 {
   "name": "ec-cube/eccube2downloads",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "EC-CUBE 2系のダウンロード販売機能を4.3系で利用可能にするプラグイン",
   "type": "eccube-plugin",
   "extra": {

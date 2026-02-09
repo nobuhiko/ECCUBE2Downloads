@@ -9,14 +9,14 @@ class ConfigControllerTest extends AbstractAdminWebTestCase
 {
     public function testRouting()
     {
-        $this->client->request('GET', $this->generateUrl('eccube2downloads_admin_config'));
+        $this->client->request('GET', $this->generateUrl('eccube2_downloads_admin_config'));
 
         self::assertEquals(200, $this->client->getResponse()->getStatusCode());
     }
 
     public function testSubmit()
     {
-        $crawler = $this->client->request('GET', $this->generateUrl('eccube2downloads_admin_config'));
+        $crawler = $this->client->request('GET', $this->generateUrl('eccube2_downloads_admin_config'));
 
         $form = $crawler->selectButton('登録')->form();
         $form['config[downloadable_days]'] = 60;
@@ -30,7 +30,7 @@ class ConfigControllerTest extends AbstractAdminWebTestCase
 
     public function testSubmitUnlimited()
     {
-        $crawler = $this->client->request('GET', $this->generateUrl('eccube2downloads_admin_config'));
+        $crawler = $this->client->request('GET', $this->generateUrl('eccube2_downloads_admin_config'));
 
         $form = $crawler->selectButton('登録')->form();
         $form['config[downloadable_days]'] = 30;
@@ -47,7 +47,7 @@ class ConfigControllerTest extends AbstractAdminWebTestCase
 
     public function testSubmitValidationError()
     {
-        $crawler = $this->client->request('GET', $this->generateUrl('eccube2downloads_admin_config'));
+        $crawler = $this->client->request('GET', $this->generateUrl('eccube2_downloads_admin_config'));
 
         $form = $crawler->selectButton('登録')->form();
         $form['config[downloadable_days]'] = '';

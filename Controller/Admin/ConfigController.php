@@ -22,7 +22,7 @@ class ConfigController extends AbstractController
     }
 
     /**
-     * @Route("/%eccube_admin_route%/eccube2downloads/config", name="eccube2downloads_admin_config")
+     * @Route("/%eccube_admin_route%/eccube2downloads/config", name="eccube2_downloads_admin_config")
      *
      * @Template("@ECCUBE2Downloads/admin/config.twig")
      */
@@ -39,7 +39,7 @@ class ConfigController extends AbstractController
 
             $this->addSuccess('admin.common.save_complete', 'admin');
 
-            return $this->redirectToRoute('eccube2downloads_admin_config');
+            return $this->redirectToRoute('eccube2_downloads_admin_config');
         }
 
         return [
