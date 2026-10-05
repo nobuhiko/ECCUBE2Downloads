@@ -1,59 +1,64 @@
 <?php
 
-namespace Plugin\ECCUBE2Downloads\Tests\Web\Admin;
+declare(strict_types=1);
 
+namespace Plugin\ECCUBE2Downloads44\Tests\Web\Admin;
+
+use Symfony\Component\HttpFoundation\Response;
 use Eccube\Tests\Web\Admin\AbstractAdminWebTestCase;
-use Plugin\ECCUBE2Downloads\Entity\Config;
+use Plugin\ECCUBE2Downloads44\Entity\Config;
 
-class ConfigControllerTest extends AbstractAdminWebTestCase
+final class ConfigControllerTest extends AbstractAdminWebTestCase
 {
-    public function testRouting()
+    public function testRouting(): void
     {
-        $this->client->request('GET', $this->generateUrl('eccube2_downloads_admin_config'));
+        $this->client->request('GET', $this->generateUrl('eccube2downloads44_admin_config'));
 
-        self::assertEquals(200, $this->client->getResponse()->getStatusCode());
+        $this->assertEquals(Response::HTTP_OK, $this->client->getResponse()->getStatusCode());
     }
 
-    public function testSubmit()
+    public function testSubmit(): void
     {
-        $crawler = $this->client->request('GET', $this->generateUrl('eccube2_downloads_admin_config'));
+        $crawler = $this->client->request('GET', $this->generateUrl('eccube2downloads44_admin_config'));
 
         $form = $crawler->selectButton('登録')->form();
-        $form['config[downloadable_days]'] = 60;
+        $form['config[downloadable_days]'] = '60';
 
         $this->client->submit($form);
-        self::assertTrue($this->client->getResponse()->isRedirection());
+        $this->assertTrue($this->client->getResponse()->isRedirection());
 
         $Config = $this->entityManager->getRepository(Config::class)->findOneBy([]);
-        self::assertEquals(60, $Config->getDownloadableDays());
+        $this->assertInstanceOf(Config::class, $Config);
+        $this->assertSame(60, $Config->getDownloadableDays());
     }
 
-    public function testSubmitUnlimited()
+    public function testSubmitUnlimited(): void
     {
-        $crawler = $this->client->request('GET', $this->generateUrl('eccube2_downloads_admin_config'));
+        $crawler = $this->client->request('GET', $this->generateUrl('eccube2downloads44_admin_config'));
 
         $form = $crawler->selectButton('登録')->form();
-        $form['config[downloadable_days]'] = 30;
-        $form['config[downloadable_days_unlimited]'] = 1;
+        $form['config[downloadable_days]'] = '30';
+        $form['config[downloadable_days_unlimited]']->tick();
 
         $this->client->submit($form);
-        self::assertTrue($this->client->getResponse()->isRedirection());
+        $this->assertTrue($this->client->getResponse()->isRedirection());
 
         // re-read from DB
         $this->entityManager->clear();
         $Config = $this->entityManager->getRepository(Config::class)->findOneBy([]);
-        self::assertTrue($Config->isDownloadableDaysUnlimited());
+        $this->assertInstanceOf(Config::class, $Config);
+        $this->assertTrue($Config->isDownloadableDaysUnlimited());
     }
 
-    public function testSubmitValidationError()
+    public function testSubmitValidationError(): void
     {
-        $crawler = $this->client->request('GET', $this->generateUrl('eccube2_downloads_admin_config'));
+        $crawler = $this->client->request('GET', $this->generateUrl('eccube2downloads44_admin_config'));
 
         $form = $crawler->selectButton('登録')->form();
         $form['config[downloadable_days]'] = '';
 
-        $crawler = $this->client->submit($form);
+        $this->client->submit($form);
         // フォームバリデーションエラーで200が返る
-        self::assertEquals(200, $this->client->getResponse()->getStatusCode());
+        $this->assertEquals(Response::HTTP_OK, $this->client->getResponse()->getStatusCode());
     }
 }

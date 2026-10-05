@@ -1,13 +1,16 @@
 <?php
 
-namespace Plugin\ECCUBE2Downloads\Tests\Web;
+declare(strict_types=1);
 
+namespace Plugin\ECCUBE2Downloads44\Tests\Web;
+
+use Symfony\Component\HttpFoundation\Response;
 use Eccube\Entity\Customer;
 use Eccube\Entity\Master\OrderStatus;
 use Eccube\Entity\Order;
 use Eccube\Tests\Web\AbstractWebTestCase;
 
-class MypageHistoryTest extends AbstractWebTestCase
+final class MypageHistoryTest extends AbstractWebTestCase
 {
     /** @var Customer */
     protected $Customer;
@@ -24,11 +27,12 @@ class MypageHistoryTest extends AbstractWebTestCase
 
         // 新規受付ステータスに設定
         $OrderStatus = $this->entityManager->find(OrderStatus::class, OrderStatus::NEW);
+        $this->assertInstanceOf(OrderStatus::class, $OrderStatus);
         $this->Order->setOrderStatus($OrderStatus);
         $this->entityManager->flush();
     }
 
-    public function testHistoryPageAccessible()
+    public function testHistoryPageAccessible(): void
     {
         $this->loginTo($this->Customer);
 
@@ -36,10 +40,10 @@ class MypageHistoryTest extends AbstractWebTestCase
             'order_no' => $this->Order->getOrderNo(),
         ]));
 
-        self::assertEquals(200, $this->client->getResponse()->getStatusCode());
+        $this->assertEquals(Response::HTTP_OK, $this->client->getResponse()->getStatusCode());
     }
 
-    public function testHistoryShowsDownloadLink()
+    public function testHistoryShowsDownloadLink(): void
     {
         $this->loginTo($this->Customer);
 
@@ -58,18 +62,18 @@ class MypageHistoryTest extends AbstractWebTestCase
         $this->Order->setOrderStatus($OrderStatus);
         $this->entityManager->flush();
 
-        $crawler = $this->client->request('GET', $this->generateUrl('mypage_history', [
+        $this->client->request('GET', $this->generateUrl('mypage_history', [
             'order_no' => $this->Order->getOrderNo(),
         ]));
 
-        self::assertEquals(200, $this->client->getResponse()->getStatusCode());
+        $this->assertEquals(Response::HTTP_OK, $this->client->getResponse()->getStatusCode());
         // ダウンロード商品セクションが表示されていること
         $content = $this->client->getResponse()->getContent();
-        self::assertStringContainsString('ダウンロード商品', $content);
-        self::assertStringContainsString('ダウンロード', $content);
+        $this->assertStringContainsString('ダウンロード商品', (string) $content);
+        $this->assertStringContainsString('ダウンロード', (string) $content);
     }
 
-    public function testHistoryShowsPaymentPending()
+    public function testHistoryShowsPaymentPending(): void
     {
         $this->loginTo($this->Customer);
 
@@ -82,14 +86,14 @@ class MypageHistoryTest extends AbstractWebTestCase
                 break;
             }
         }
-        $this->Order->setPaymentDate(null);
+        $this->Order->setPaymentDate();
         $this->entityManager->flush();
 
-        $crawler = $this->client->request('GET', $this->generateUrl('mypage_history', [
+        $this->client->request('GET', $this->generateUrl('mypage_history', [
             'order_no' => $this->Order->getOrderNo(),
         ]));
 
         $content = $this->client->getResponse()->getContent();
-        self::assertStringContainsString('入金確認中', $content);
+        $this->assertStringContainsString('入金確認中', (string) $content);
     }
 }

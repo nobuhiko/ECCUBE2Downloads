@@ -1,43 +1,39 @@
 <?php
 
-namespace Plugin\ECCUBE2Downloads\Controller\Admin;
+namespace Plugin\ECCUBE2Downloads44\Controller\Admin;
 
 use Eccube\Controller\AbstractController;
 use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 
 class FileUploadController extends AbstractController
 {
-    /**
-     * @var string|null
-     */
-    private $downloadDir;
+    private ?string $downloadDir = null;
 
     private function getDownloadDir(): string
     {
-        if ($this->downloadDir === null) {
-            $this->downloadDir = $this->eccubeConfig->get('kernel.project_dir').'/var/downloads';
-        }
+        $this->downloadDir ??= $this->eccubeConfig->get('kernel.project_dir').'/var/downloads';
 
         return $this->downloadDir;
     }
 
     /**
      * ダウンロードファイルのアップロード.
-     *
-     * @Route("/%eccube_admin_route%/eccube2downloads/file/upload", name="eccube2downloads_admin_file_upload", methods={"POST"})
      */
-    public function upload(Request $request)
+    #[Route(path: '/%eccube_admin_route%/eccube2downloads44/file/upload', name: 'eccube2downloads44_admin_file_upload', methods: ['POST'])]
+    public function upload(Request $request): JsonResponse
     {
         if (!$request->isXmlHttpRequest() && $this->isTokenValid()) {
             throw new BadRequestHttpException();
         }
 
-        $file = $request->files->get('eccube2downloads_file');
-        if ($file === null) {
+        $file = $request->files->get('eccube2downloads44_file');
+        if (!$file instanceof UploadedFile) {
             return $this->json(['error' => 'ファイルが選択されていません。'], Response::HTTP_BAD_REQUEST);
         }
 
@@ -69,17 +65,16 @@ class FileUploadController extends AbstractController
 
     /**
      * ダウンロードファイルの削除.
-     *
-     * @Route("/%eccube_admin_route%/eccube2downloads/file/delete", name="eccube2downloads_admin_file_delete", methods={"POST"})
      */
-    public function delete(Request $request)
+    #[Route(path: '/%eccube_admin_route%/eccube2downloads44/file/delete', name: 'eccube2downloads44_admin_file_delete', methods: ['POST'])]
+    public function delete(Request $request): JsonResponse
     {
         if (!$request->isXmlHttpRequest() && $this->isTokenValid()) {
             throw new BadRequestHttpException();
         }
 
-        $filename = $request->request->get('filename');
-        if (!$filename || basename($filename) !== $filename || strpos($filename, "\0") !== false) {
+        $filename = (string) $request->request->get('filename', '');
+        if ($filename === '' || basename($filename) !== $filename || str_contains($filename, "\0")) {
             throw new BadRequestHttpException();
         }
 
@@ -88,7 +83,7 @@ class FileUploadController extends AbstractController
         $realPath = realpath($filePath);
         $realDownloadDir = realpath($downloadDir);
 
-        if ($realPath && $realDownloadDir && is_file($realPath) && strpos($realPath, $realDownloadDir.DIRECTORY_SEPARATOR) === 0) {
+        if ($realPath && $realDownloadDir && is_file($realPath) && str_starts_with($realPath, $realDownloadDir.DIRECTORY_SEPARATOR)) {
             $fs = new Filesystem();
             $fs->remove($realPath);
         }

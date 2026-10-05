@@ -1,32 +1,24 @@
 <?php
 
-namespace Plugin\ECCUBE2Downloads\Controller\Admin;
+namespace Plugin\ECCUBE2Downloads44\Controller\Admin;
 
 use Eccube\Controller\AbstractController;
-use Plugin\ECCUBE2Downloads\Form\Type\Admin\ConfigType;
-use Plugin\ECCUBE2Downloads\Repository\ConfigRepository;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
+use Plugin\ECCUBE2Downloads44\Form\Type\Admin\ConfigType;
+use Plugin\ECCUBE2Downloads44\Repository\ConfigRepository;
+use Symfony\Bridge\Twig\Attribute\Template;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\Attribute\Route;
 
 class ConfigController extends AbstractController
 {
-    /**
-     * @var ConfigRepository
-     */
-    protected $configRepository;
-
-    public function __construct(ConfigRepository $configRepository)
+    public function __construct(private readonly ConfigRepository $configRepository)
     {
-        $this->configRepository = $configRepository;
     }
 
-    /**
-     * @Route("/%eccube_admin_route%/eccube2downloads/config", name="eccube2_downloads_admin_config")
-     *
-     * @Template("@ECCUBE2Downloads/admin/config.twig")
-     */
-    public function index(Request $request)
+    #[Route(path: '/%eccube_admin_route%/eccube2downloads44/config', name: 'eccube2downloads44_admin_config', methods: ['GET', 'POST'])]
+    #[Template(template: '@ECCUBE2Downloads44/admin/config.twig')]
+    public function index(Request $request): array|RedirectResponse
     {
         $Config = $this->configRepository->get();
         $form = $this->createForm(ConfigType::class, $Config);
@@ -39,7 +31,7 @@ class ConfigController extends AbstractController
 
             $this->addSuccess('admin.common.save_complete', 'admin');
 
-            return $this->redirectToRoute('eccube2_downloads_admin_config');
+            return $this->redirectToRoute('eccube2downloads44_admin_config');
         }
 
         return [

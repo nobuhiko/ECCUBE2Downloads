@@ -1,11 +1,14 @@
 <?php
 
-namespace Plugin\ECCUBE2Downloads\Repository;
+namespace Plugin\ECCUBE2Downloads44\Repository;
 
 use Doctrine\Persistence\ManagerRegistry as RegistryInterface;
 use Eccube\Repository\AbstractRepository;
-use Plugin\ECCUBE2Downloads\Entity\Config;
+use Plugin\ECCUBE2Downloads44\Entity\Config;
 
+/**
+ * @extends AbstractRepository<Config>
+ */
 class ConfigRepository extends AbstractRepository
 {
     public function __construct(RegistryInterface $registry)
@@ -13,10 +16,7 @@ class ConfigRepository extends AbstractRepository
         parent::__construct($registry, Config::class);
     }
 
-    /**
-     * @return Config|null
-     */
-    public function get()
+    public function get(): ?Config
     {
         return $this->findOneBy([]);
     }

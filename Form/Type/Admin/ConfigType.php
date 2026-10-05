@@ -1,8 +1,8 @@
 <?php
 
-namespace Plugin\ECCUBE2Downloads\Form\Type\Admin;
+namespace Plugin\ECCUBE2Downloads44\Form\Type\Admin;
 
-use Plugin\ECCUBE2Downloads\Entity\Config;
+use Plugin\ECCUBE2Downloads44\Entity\Config;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
@@ -12,7 +12,8 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 class ConfigType extends AbstractType
 {
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    #[\Override]
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
             ->add('downloadable_days', IntegerType::class, [
@@ -20,7 +21,7 @@ class ConfigType extends AbstractType
                 'required' => true,
                 'constraints' => [
                     new Assert\NotBlank(),
-                    new Assert\GreaterThanOrEqual(['value' => 0]),
+                    new Assert\GreaterThanOrEqual(value: 0),
                 ],
                 'attr' => [
                     'min' => 0,
@@ -32,7 +33,8 @@ class ConfigType extends AbstractType
             ]);
     }
 
-    public function configureOptions(OptionsResolver $resolver)
+    #[\Override]
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'data_class' => Config::class,

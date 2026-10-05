@@ -1,33 +1,35 @@
 <?php
 
-namespace Plugin\ECCUBE2Downloads\Tests\Entity;
+declare(strict_types=1);
+
+namespace Plugin\ECCUBE2Downloads44\Tests\Entity;
 
 use Eccube\Tests\EccubeTestCase;
-use Plugin\ECCUBE2Downloads\Entity\Config;
+use Plugin\ECCUBE2Downloads44\Entity\Config;
 
-class ConfigTest extends EccubeTestCase
+final class ConfigTest extends EccubeTestCase
 {
-    public function testGetSetDownloadableDays()
+    public function testGetSetDownloadableDays(): void
     {
         $Config = new Config();
         $Config->setDownloadableDays(60);
 
-        self::assertEquals(60, $Config->getDownloadableDays());
+        $this->assertSame(60, $Config->getDownloadableDays());
     }
 
-    public function testGetSetDownloadableDaysUnlimited()
+    public function testGetSetDownloadableDaysUnlimited(): void
     {
         $Config = new Config();
         $Config->setDownloadableDaysUnlimited(true);
 
-        self::assertTrue($Config->isDownloadableDaysUnlimited());
+        $this->assertTrue($Config->isDownloadableDaysUnlimited());
     }
 
-    public function testDefaultValues()
+    public function testDefaultValues(): void
     {
         $Config = new Config();
 
-        self::assertEquals(30, $Config->getDownloadableDays());
-        self::assertFalse($Config->isDownloadableDaysUnlimited());
+        $this->assertSame(30, $Config->getDownloadableDays());
+        $this->assertFalse($Config->isDownloadableDaysUnlimited());
     }
 }

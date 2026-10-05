@@ -1,6 +1,6 @@
 <?php
 
-namespace Plugin\ECCUBE2Downloads;
+namespace Plugin\ECCUBE2Downloads44;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Eccube\Entity\Delivery;
@@ -11,7 +11,7 @@ use Eccube\Entity\Member;
 use Eccube\Entity\Payment;
 use Eccube\Entity\PaymentOption;
 use Eccube\Plugin\AbstractPluginManager;
-use Plugin\ECCUBE2Downloads\Entity\Config;
+use Plugin\ECCUBE2Downloads44\Entity\Config;
 use Psr\Container\ContainerInterface;
 
 class PluginManager extends AbstractPluginManager
@@ -19,10 +19,10 @@ class PluginManager extends AbstractPluginManager
     public const SALE_TYPE_ID = 222;
     public const SALE_TYPE_NAME = 'ダウンロード';
 
-    public function enable(array $meta, ContainerInterface $container)
+    #[\Override]
+    public function enable(array $meta, ContainerInterface $container): void
     {
-        /** @var EntityManagerInterface $em */
-        $em = $container->get('doctrine')->getManager();
+        $em = $this->getEntityManager($container);
 
         $this->createSaleType($em);
         $this->createDelivery($em);
@@ -31,10 +31,10 @@ class PluginManager extends AbstractPluginManager
         $em->flush();
     }
 
-    public function disable(array $meta, ContainerInterface $container)
+    #[\Override]
+    public function disable(array $meta, ContainerInterface $container): void
     {
-        /** @var EntityManagerInterface $em */
-        $em = $container->get('doctrine')->getManager();
+        $em = $this->getEntityManager($container);
 
         $Delivery = $this->findDownloadDelivery($em);
         if ($Delivery) {
@@ -43,10 +43,10 @@ class PluginManager extends AbstractPluginManager
         }
     }
 
-    public function uninstall(array $meta, ContainerInterface $container)
+    #[\Override]
+    public function uninstall(array $meta, ContainerInterface $container): void
     {
-        /** @var EntityManagerInterface $em */
-        $em = $container->get('doctrine')->getManager();
+        $em = $this->getEntityManager($container);
 
         // 配送方法の削除
         $Delivery = $this->findDownloadDelivery($em);
@@ -69,7 +69,15 @@ class PluginManager extends AbstractPluginManager
         $em->flush();
     }
 
-    private function createSaleType(EntityManagerInterface $em)
+    private function getEntityManager(ContainerInterface $container): EntityManagerInterface
+    {
+        /** @var EntityManagerInterface $em */
+        $em = $container->get('doctrine')->getManager();
+
+        return $em;
+    }
+
+    private function createSaleType(EntityManagerInterface $em): void
     {
         $SaleType = $em->find(SaleType::class, self::SALE_TYPE_ID);
         if ($SaleType) {
@@ -84,7 +92,7 @@ class PluginManager extends AbstractPluginManager
         $em->persist($SaleType);
     }
 
-    private function createDelivery(EntityManagerInterface $em)
+    private function createDelivery(EntityManagerInterface $em): void
     {
         $Delivery = $this->findDownloadDelivery($em);
         if ($Delivery) {
@@ -114,7 +122,7 @@ class PluginManager extends AbstractPluginManager
             $DeliveryFee = new DeliveryFee();
             $DeliveryFee->setDelivery($Delivery);
             $DeliveryFee->setPref($Pref);
-            $DeliveryFee->setFee(0);
+            $DeliveryFee->setFee('0');
             $em->persist($DeliveryFee);
         }
 
@@ -130,7 +138,7 @@ class PluginManager extends AbstractPluginManager
         }
     }
 
-    private function createConfig(EntityManagerInterface $em)
+    private function createConfig(EntityManagerInterface $em): void
     {
         $Config = $em->getRepository(Config::class)->findOneBy([]);
         if ($Config) {
@@ -143,10 +151,7 @@ class PluginManager extends AbstractPluginManager
         $em->persist($Config);
     }
 
-    /**
-     * @return Delivery|null
-     */
-    private function findDownloadDelivery(EntityManagerInterface $em)
+    private function findDownloadDelivery(EntityManagerInterface $em): ?Delivery
     {
         $SaleType = $em->find(SaleType::class, self::SALE_TYPE_ID);
         if (!$SaleType) {

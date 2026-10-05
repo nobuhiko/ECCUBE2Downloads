@@ -1,4 +1,4 @@
-name: CI for ECCUBE2Downloads
+name: CI for ECCUBE2Downloads44
 
 on:
   push:
@@ -11,13 +11,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php: [ '8.1', '8.2', '8.3' ]
+        php: [ '8.2', '8.3', '8.4', '8.5' ]
         db: [ pgsql, sqlite3 ]
-        eccube-version: [ '4.3' ]
+        eccube-version: [ '4.4' ]
         include:
           - db: pgsql
             database_url: postgres://postgres:password@127.0.0.1:5432/eccube_db
-            database_server_version: 16
+            database_server_version: 18
             database_charset: utf8
           - db: sqlite3
             database_url: sqlite:///var/eccube.db
@@ -26,7 +26,7 @@ jobs:
 
     services:
       postgres:
-        image: postgres:16
+        image: postgres:18
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: password
@@ -44,13 +44,13 @@ jobs:
       - name: Checkout Plugin
         uses: actions/checkout@v4
         with:
-          path: app/Plugin/ECCUBE2Downloads
+          path: app/Plugin/ECCUBE2Downloads44
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
-          extensions: mbstring, xml, ctype, iconv, pdo_sqlite, pgsql, pdo_pgsql
+          extensions: mbstring, xml, ctype, iconv, pdo_sqlite, pgsql, pdo_pgsql, bcmath, intl, zip, sodium
 
       - name: Get Composer Cache Directory
         id: composer-cache
@@ -64,7 +64,7 @@ jobs:
           restore-keys: ${{ runner.os }}-composer-
 
       - name: Composer Install
-        run: composer install --dev --no-interaction -o --apcu-autoloader
+        run: composer install --dev --no-interaction -o --apcu-autoloader --ignore-platform-req=ext-redis
 
       - name: Setup EC-CUBE
         env:
@@ -84,7 +84,7 @@ jobs:
           DATABASE_SERVER_VERSION: ${{ matrix.database_server_version }}
           DATABASE_CHARSET: ${{ matrix.database_charset }}
         run: |
-          bin/console eccube:plugin:install --code=ECCUBE2Downloads
+          bin/console eccube:plugin:install --code=ECCUBE2Downloads44
           bin/console cache:clear --no-warmup
 
       - name: Plugin Enable
@@ -94,7 +94,7 @@ jobs:
           DATABASE_SERVER_VERSION: ${{ matrix.database_server_version }}
           DATABASE_CHARSET: ${{ matrix.database_charset }}
         run: |
-          bin/console eccube:plugin:enable --code=ECCUBE2Downloads
+          bin/console eccube:plugin:enable --code=ECCUBE2Downloads44
           bin/console cache:clear --no-warmup
 
       - name: Plugin Disable
@@ -104,7 +104,7 @@ jobs:
           DATABASE_SERVER_VERSION: ${{ matrix.database_server_version }}
           DATABASE_CHARSET: ${{ matrix.database_charset }}
         run: |
-          bin/console eccube:plugin:disable --code=ECCUBE2Downloads
+          bin/console eccube:plugin:disable --code=ECCUBE2Downloads44
           bin/console cache:clear --no-warmup
 
       - name: Plugin Re-Enable
@@ -114,7 +114,7 @@ jobs:
           DATABASE_SERVER_VERSION: ${{ matrix.database_server_version }}
           DATABASE_CHARSET: ${{ matrix.database_charset }}
         run: |
-          bin/console eccube:plugin:enable --code=ECCUBE2Downloads
+          bin/console eccube:plugin:enable --code=ECCUBE2Downloads44
           bin/console cache:clear --no-warmup
 
       - name: Plugin Uninstall
@@ -124,8 +124,8 @@ jobs:
           DATABASE_SERVER_VERSION: ${{ matrix.database_server_version }}
           DATABASE_CHARSET: ${{ matrix.database_charset }}
         run: |
-          bin/console eccube:plugin:disable --code=ECCUBE2Downloads
-          bin/console eccube:plugin:uninstall --code=ECCUBE2Downloads
+          bin/console eccube:plugin:disable --code=ECCUBE2Downloads44
+          bin/console eccube:plugin:uninstall --code=ECCUBE2Downloads44
 
   phpunit:
     name: PHPUnit
@@ -133,13 +133,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php: [ '8.1', '8.2', '8.3' ]
+        php: [ '8.2', '8.3', '8.4', '8.5' ]
         db: [ pgsql, sqlite3 ]
-        eccube-version: [ '4.3' ]
+        eccube-version: [ '4.4' ]
         include:
           - db: pgsql
             database_url: postgres://postgres:password@127.0.0.1:5432/eccube_db
-            database_server_version: 16
+            database_server_version: 18
             database_charset: utf8
           - db: sqlite3
             database_url: sqlite:///var/eccube.db
@@ -148,7 +148,7 @@ jobs:
 
     services:
       postgres:
-        image: postgres:16
+        image: postgres:18
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: password
@@ -166,13 +166,13 @@ jobs:
       - name: Checkout Plugin
         uses: actions/checkout@v4
         with:
-          path: app/Plugin/ECCUBE2Downloads
+          path: app/Plugin/ECCUBE2Downloads44
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
-          extensions: mbstring, xml, ctype, iconv, pdo_sqlite, pgsql, pdo_pgsql
+          extensions: mbstring, xml, ctype, iconv, pdo_sqlite, pgsql, pdo_pgsql, bcmath, intl, zip, sodium
 
       - name: Get Composer Cache Directory
         id: composer-cache
@@ -186,7 +186,7 @@ jobs:
           restore-keys: ${{ runner.os }}-composer-
 
       - name: Composer Install
-        run: composer install --dev --no-interaction -o --apcu-autoloader
+        run: composer install --dev --no-interaction -o --apcu-autoloader --ignore-platform-req=ext-redis
 
       - name: Setup EC-CUBE
         env:
@@ -206,9 +206,9 @@ jobs:
           DATABASE_SERVER_VERSION: ${{ matrix.database_server_version }}
           DATABASE_CHARSET: ${{ matrix.database_charset }}
         run: |
-          bin/console eccube:plugin:install --code=ECCUBE2Downloads
+          bin/console eccube:plugin:install --code=ECCUBE2Downloads44
           bin/console cache:clear --no-warmup
-          bin/console eccube:plugin:enable --code=ECCUBE2Downloads
+          bin/console eccube:plugin:enable --code=ECCUBE2Downloads44
           bin/console cache:clear --no-warmup
 
       - name: PHPUnit
@@ -217,7 +217,10 @@ jobs:
           DATABASE_URL: ${{ matrix.database_url }}
           DATABASE_SERVER_VERSION: ${{ matrix.database_server_version }}
           DATABASE_CHARSET: ${{ matrix.database_charset }}
-        run: vendor/bin/phpunit app/Plugin/ECCUBE2Downloads/Tests
+        run: |
+          bin/console cache:clear --no-warmup
+          bin/console cache:warmup
+          vendor/bin/phpunit -c app/Plugin/ECCUBE2Downloads44/phpunit.xml.dist app/Plugin/ECCUBE2Downloads44/Tests
 
       - name: Upload logs
         if: failure()

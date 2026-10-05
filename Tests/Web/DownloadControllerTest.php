@@ -1,14 +1,17 @@
 <?php
 
-namespace Plugin\ECCUBE2Downloads\Tests\Web;
+declare(strict_types=1);
 
+namespace Plugin\ECCUBE2Downloads44\Tests\Web;
+
+use Symfony\Component\HttpFoundation\Response;
 use Eccube\Entity\Customer;
 use Eccube\Entity\Master\OrderStatus;
 use Eccube\Entity\Order;
 use Eccube\Tests\Web\AbstractWebTestCase;
-use Plugin\ECCUBE2Downloads\Entity\Config;
+use Plugin\ECCUBE2Downloads44\Entity\Config;
 
-class DownloadControllerTest extends AbstractWebTestCase
+final class DownloadControllerTest extends AbstractWebTestCase
 {
     /** @var Customer */
     protected $Customer;
@@ -75,70 +78,70 @@ class DownloadControllerTest extends AbstractWebTestCase
         return null;
     }
 
-    public function testDownloadSuccess()
+    public function testDownloadSuccess(): void
     {
         $this->loginTo($this->Customer);
 
         $orderItemId = $this->getDownloadableOrderItemId();
-        self::assertNotNull($orderItemId);
+        $this->assertNotNull($orderItemId);
 
-        $this->client->request('GET', $this->generateUrl('eccube2downloads_mypage_download', [
+        $this->client->request('GET', $this->generateUrl('eccube2downloads44_mypage_download', [
             'order_no' => $this->Order->getOrderNo(),
             'order_item_id' => $orderItemId,
         ]));
 
-        self::assertEquals(200, $this->client->getResponse()->getStatusCode());
-        self::assertStringContainsString('attachment', $this->client->getResponse()->headers->get('Content-Disposition'));
+        $this->assertEquals(Response::HTTP_OK, $this->client->getResponse()->getStatusCode());
+        $this->assertStringContainsString('attachment', (string) $this->client->getResponse()->headers->get('Content-Disposition'));
     }
 
-    public function testDownloadNotLoggedIn()
+    public function testDownloadNotLoggedIn(): void
     {
         $orderItemId = $this->getDownloadableOrderItemId();
 
-        $this->client->request('GET', $this->generateUrl('eccube2downloads_mypage_download', [
+        $this->client->request('GET', $this->generateUrl('eccube2downloads44_mypage_download', [
             'order_no' => $this->Order->getOrderNo(),
             'order_item_id' => $orderItemId,
         ]));
 
         // ログインしていないのでリダイレクト or 403
         $status = $this->client->getResponse()->getStatusCode();
-        self::assertTrue($status === 302 || $status === 403);
+        $this->assertTrue($status === 302 || $status === 403);
     }
 
-    public function testDownloadOtherCustomer()
+    public function testDownloadOtherCustomer(): void
     {
         $OtherCustomer = $this->createCustomer();
         $this->loginTo($OtherCustomer);
 
         $orderItemId = $this->getDownloadableOrderItemId();
 
-        $this->client->request('GET', $this->generateUrl('eccube2downloads_mypage_download', [
+        $this->client->request('GET', $this->generateUrl('eccube2downloads44_mypage_download', [
             'order_no' => $this->Order->getOrderNo(),
             'order_item_id' => $orderItemId,
         ]));
 
-        self::assertEquals(404, $this->client->getResponse()->getStatusCode());
+        $this->assertEquals(Response::HTTP_NOT_FOUND, $this->client->getResponse()->getStatusCode());
     }
 
-    public function testDownloadNotPaid()
+    public function testDownloadNotPaid(): void
     {
         $this->loginTo($this->Customer);
 
         // 入金日をnullに設定
-        $this->Order->setPaymentDate(null);
+        $this->Order->setPaymentDate();
         $this->entityManager->flush();
 
         $orderItemId = $this->getDownloadableOrderItemId();
 
-        $this->client->request('GET', $this->generateUrl('eccube2downloads_mypage_download', [
+        $this->client->request('GET', $this->generateUrl('eccube2downloads44_mypage_download', [
             'order_no' => $this->Order->getOrderNo(),
             'order_item_id' => $orderItemId,
         ]));
 
-        self::assertEquals(403, $this->client->getResponse()->getStatusCode());
+        $this->assertEquals(Response::HTTP_FORBIDDEN, $this->client->getResponse()->getStatusCode());
     }
 
-    public function testDownloadExpired()
+    public function testDownloadExpired(): void
     {
         $this->loginTo($this->Customer);
 
@@ -148,20 +151,21 @@ class DownloadControllerTest extends AbstractWebTestCase
 
         $orderItemId = $this->getDownloadableOrderItemId();
 
-        $this->client->request('GET', $this->generateUrl('eccube2downloads_mypage_download', [
+        $this->client->request('GET', $this->generateUrl('eccube2downloads44_mypage_download', [
             'order_no' => $this->Order->getOrderNo(),
             'order_item_id' => $orderItemId,
         ]));
 
-        self::assertEquals(403, $this->client->getResponse()->getStatusCode());
+        $this->assertEquals(Response::HTTP_FORBIDDEN, $this->client->getResponse()->getStatusCode());
     }
 
-    public function testDownloadUnlimited()
+    public function testDownloadUnlimited(): void
     {
         $this->loginTo($this->Customer);
 
         // 無制限に設定
         $Config = $this->entityManager->getRepository(Config::class)->findOneBy([]);
+        $this->assertInstanceOf(Config::class, $Config);
         $Config->setDownloadableDaysUnlimited(true);
         $this->entityManager->flush();
 
@@ -171,27 +175,27 @@ class DownloadControllerTest extends AbstractWebTestCase
 
         $orderItemId = $this->getDownloadableOrderItemId();
 
-        $this->client->request('GET', $this->generateUrl('eccube2downloads_mypage_download', [
+        $this->client->request('GET', $this->generateUrl('eccube2downloads44_mypage_download', [
             'order_no' => $this->Order->getOrderNo(),
             'order_item_id' => $orderItemId,
         ]));
 
-        self::assertEquals(200, $this->client->getResponse()->getStatusCode());
+        $this->assertEquals(Response::HTTP_OK, $this->client->getResponse()->getStatusCode());
     }
 
-    public function testDownloadInvalidOrderNo()
+    public function testDownloadInvalidOrderNo(): void
     {
         $this->loginTo($this->Customer);
 
-        $this->client->request('GET', $this->generateUrl('eccube2downloads_mypage_download', [
+        $this->client->request('GET', $this->generateUrl('eccube2downloads44_mypage_download', [
             'order_no' => 'INVALID-ORDER-NO',
             'order_item_id' => 999999,
         ]));
 
-        self::assertEquals(404, $this->client->getResponse()->getStatusCode());
+        $this->assertEquals(Response::HTTP_NOT_FOUND, $this->client->getResponse()->getStatusCode());
     }
 
-    public function testDownloadNonDownloadProduct()
+    public function testDownloadNonDownloadProduct(): void
     {
         $this->loginTo($this->Customer);
 
@@ -208,11 +212,11 @@ class DownloadControllerTest extends AbstractWebTestCase
             $this->markTestSkipped('Non-download OrderItem not found');
         }
 
-        $this->client->request('GET', $this->generateUrl('eccube2downloads_mypage_download', [
+        $this->client->request('GET', $this->generateUrl('eccube2downloads44_mypage_download', [
             'order_no' => $this->Order->getOrderNo(),
             'order_item_id' => $nonDownloadItemId,
         ]));
 
-        self::assertEquals(404, $this->client->getResponse()->getStatusCode());
+        $this->assertEquals(Response::HTTP_NOT_FOUND, $this->client->getResponse()->getStatusCode());
     }
 }

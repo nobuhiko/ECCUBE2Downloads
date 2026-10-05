@@ -1,10 +1,10 @@
 <?php
 
-namespace Plugin\ECCUBE2Downloads\EventListener;
+namespace Plugin\ECCUBE2Downloads44\EventListener;
 
 use Eccube\Event\TemplateEvent;
 use Eccube\Service\CartService;
-use Plugin\ECCUBE2Downloads\PluginManager;
+use Plugin\ECCUBE2Downloads44\PluginManager;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
@@ -13,25 +13,14 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class ShoppingListener implements EventSubscriberInterface
 {
-    /**
-     * @var CartService
-     */
-    private $cartService;
-
-    /**
-     * @var UrlGeneratorInterface
-     */
-    private $urlGenerator;
-
     public function __construct(
-        CartService $cartService,
-        UrlGeneratorInterface $urlGenerator
+        private readonly CartService $cartService,
+        private readonly UrlGeneratorInterface $urlGenerator,
     ) {
-        $this->cartService = $cartService;
-        $this->urlGenerator = $urlGenerator;
     }
 
-    public static function getSubscribedEvents()
+    #[\Override]
+    public static function getSubscribedEvents(): array
     {
         return [
             KernelEvents::REQUEST => 'onKernelRequest',
@@ -39,7 +28,7 @@ class ShoppingListener implements EventSubscriberInterface
         ];
     }
 
-    public function onKernelRequest(RequestEvent $event)
+    public function onKernelRequest(RequestEvent $event): void
     {
         if (!$event->isMainRequest()) {
             return;
@@ -57,10 +46,10 @@ class ShoppingListener implements EventSubscriberInterface
         }
     }
 
-    public function onShoppingLogin(TemplateEvent $event)
+    public function onShoppingLogin(TemplateEvent $event): void
     {
         if ($this->hasDownloadProduct()) {
-            $event->addSnippet('@ECCUBE2Downloads/Shopping/login_download_notice.twig');
+            $event->addSnippet('@ECCUBE2Downloads44/Shopping/login_download_notice.twig');
         }
     }
 

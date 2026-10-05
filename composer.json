@@ -1,9 +1,12 @@
 {
-  "name": "ec-cube/eccube2downloads",
-  "version": "1.1.1",
-  "description": "EC-CUBE 2系のダウンロード販売機能を4.3系で利用可能にするプラグイン",
+  "name": "ec-cube/eccube2downloads44",
+  "version": "4.4.0",
+  "description": "EC-CUBE 2系のダウンロード販売機能を4.4系で利用可能にするプラグイン",
   "type": "eccube-plugin",
+  "require": {
+    "ec-cube/plugin-installer": "^2.0"
+  },
   "extra": {
-    "code": "ECCUBE2Downloads"
+    "code": "ECCUBE2Downloads44"
   }
 }
