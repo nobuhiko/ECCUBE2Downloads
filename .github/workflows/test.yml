@@ -73,7 +73,10 @@ jobs:
           DATABASE_SERVER_VERSION: ${{ matrix.database_server_version }}
           DATABASE_CHARSET: ${{ matrix.database_charset }}
         run: |
-          bin/console doctrine:database:create
+          # sqlite3 は doctrine:database:create が失敗する (schema:create が DB ファイルを生成する)
+          if [ "${{ matrix.db }}" != 'sqlite3' ]; then
+            bin/console doctrine:database:create
+          fi
           bin/console doctrine:schema:create
           bin/console eccube:fixtures:load
 
@@ -195,7 +198,10 @@ jobs:
           DATABASE_SERVER_VERSION: ${{ matrix.database_server_version }}
           DATABASE_CHARSET: ${{ matrix.database_charset }}
         run: |
-          bin/console doctrine:database:create
+          # sqlite3 は doctrine:database:create が失敗する (schema:create が DB ファイルを生成する)
+          if [ "${{ matrix.db }}" != 'sqlite3' ]; then
+            bin/console doctrine:database:create
+          fi
           bin/console doctrine:schema:create
           bin/console eccube:fixtures:load
 
